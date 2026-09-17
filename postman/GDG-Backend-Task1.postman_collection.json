@@ -1,0 +1,502 @@
+{
+  "info": {
+    "name": "GDG Backend - Task 1",
+    "description": "Complete Postman collection for the Spring Boot + MySQL Event Management System: CRUD, Validation, Business Rules, and API Features (search, filter, pagination, sorting).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "eventId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "cancelledEventId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "CRUD",
+      "item": [
+        {
+          "name": "Create Event",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"GDG Hackathon\",\n  \"description\": \"A backend development event\",\n  \"startDateTime\": \"2026-12-10T10:00:00\",\n  \"endDateTime\": \"2026-12-10T16:00:00\",\n  \"venue\": \"Main Auditorium\",\n  \"capacity\": 100,\n  \"status\": \"UPCOMING\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/events",
+              "host": ["{{baseUrl}}"],
+              "path": ["events"]
+            },
+            "description": "Creates a valid UPCOMING event. Saves the returned id into the collection variable eventId for use by the Get/Update/Delete requests. Expected status: 201 Created."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let jsonData = pm.response.json();",
+                  "if (jsonData.id) {",
+                  "    pm.collectionVariables.set(\"eventId\", jsonData.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Get All Events",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/events",
+              "host": ["{{baseUrl}}"],
+              "path": ["events"]
+            },
+            "description": "Retrieves the full list of events. Expected status: 200 OK."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Event By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/events/{{eventId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["events", "{{eventId}}"]
+            },
+            "description": "Retrieves a single event by its id (uses eventId saved by Create Event). Expected status: 200 OK."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Event",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"GDG Hackathon - Updated\",\n  \"description\": \"An updated backend development event\",\n  \"startDateTime\": \"2026-12-10T10:00:00\",\n  \"endDateTime\": \"2026-12-10T17:00:00\",\n  \"venue\": \"Main Auditorium\",\n  \"capacity\": 120,\n  \"status\": \"UPCOMING\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/events/{{eventId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["events", "{{eventId}}"]
+            },
+            "description": "Applies a valid update to the UPCOMING event created earlier (uses eventId). Expected status: 200 OK."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Event",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/events/{{eventId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["events", "{{eventId}}"]
+            },
+            "description": "Deletes the UPCOMING event created earlier (uses eventId). Only UPCOMING events can be deleted. Expected status: 204 No Content."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Validation",
+      "item": [
+        {
+          "name": "Missing Required Field",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Event missing the required name field\",\n  \"startDateTime\": \"2026-12-10T10:00:00\",\n  \"endDateTime\": \"2026-12-10T16:00:00\",\n  \"venue\": \"Main Auditorium\",\n  \"capacity\": 100,\n  \"status\": \"UPCOMING\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/events",
+              "host": ["{{baseUrl}}"],
+              "path": ["events"]
+            },
+            "description": "Omits the required 'name' field to test field validation. Expected status: 400 Bad Request."
+          },
+          "response": []
+        },
+        {
+          "name": "Invalid Capacity",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Invalid Capacity Event\",\n  \"description\": \"Event with a non-positive capacity\",\n  \"startDateTime\": \"2026-12-10T10:00:00\",\n  \"endDateTime\": \"2026-12-10T16:00:00\",\n  \"venue\": \"Main Auditorium\",\n  \"capacity\": 0,\n  \"status\": \"UPCOMING\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/events",
+              "host": ["{{baseUrl}}"],
+              "path": ["events"]
+            },
+            "description": "Uses a zero capacity to test that capacity must be positive. Expected status: 400 Bad Request."
+          },
+          "response": []
+        },
+        {
+          "name": "Past Event",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Past Event\",\n  \"description\": \"Event with a start time in the past\",\n  \"startDateTime\": \"2020-01-01T10:00:00\",\n  \"endDateTime\": \"2020-01-01T16:00:00\",\n  \"venue\": \"Main Auditorium\",\n  \"capacity\": 100,\n  \"status\": \"UPCOMING\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/events",
+              "host": ["{{baseUrl}}"],
+              "path": ["events"]
+            },
+            "description": "Uses a startDateTime in the past to test that events cannot be created in the past. Expected status: 400 Bad Request."
+          },
+          "response": []
+        },
+        {
+          "name": "Invalid Date Range",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Invalid Date Range Event\",\n  \"description\": \"Event where endDateTime is not after startDateTime\",\n  \"startDateTime\": \"2026-12-10T16:00:00\",\n  \"endDateTime\": \"2026-12-10T10:00:00\",\n  \"venue\": \"Main Auditorium\",\n  \"capacity\": 100,\n  \"status\": \"UPCOMING\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/events",
+              "host": ["{{baseUrl}}"],
+              "path": ["events"]
+            },
+            "description": "Sets endDateTime earlier than startDateTime to test date range validation. Expected status: 400 Bad Request."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Business Rules",
+      "item": [
+        {
+          "name": "Duplicate Event",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"GDG Hackathon\",\n  \"description\": \"A backend development event\",\n  \"startDateTime\": \"2026-12-10T10:00:00\",\n  \"endDateTime\": \"2026-12-10T16:00:00\",\n  \"venue\": \"Main Auditorium\",\n  \"capacity\": 100,\n  \"status\": \"UPCOMING\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/events",
+              "host": ["{{baseUrl}}"],
+              "path": ["events"]
+            },
+            "description": "Attempts to create an event with the same name, startDateTime and venue as the event created in Create Event, to test duplicate detection. Expected status: 409 Conflict."
+          },
+          "response": []
+        },
+        {
+          "name": "Invalid Status",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Invalid Status Test Event\",\n  \"description\": \"Future event incorrectly marked ONGOING\",\n  \"startDateTime\": \"2026-12-10T10:00:00\",\n  \"endDateTime\": \"2026-12-10T16:00:00\",\n  \"venue\": \"Seminar Hall\",\n  \"capacity\": 50,\n  \"status\": \"ONGOING\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/events",
+              "host": ["{{baseUrl}}"],
+              "path": ["events"]
+            },
+            "description": "Creates a future event with status ONGOING, which is invalid since ONGOING requires the current time to be between start and end. Expected status: 400 Bad Request."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Cancelled Event",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Cancelled Setup Event\",\n  \"description\": \"A valid future cancelled event\",\n  \"startDateTime\": \"2026-11-05T09:00:00\",\n  \"endDateTime\": \"2026-11-05T12:00:00\",\n  \"venue\": \"Room 204\",\n  \"capacity\": 30,\n  \"status\": \"CANCELLED\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/events",
+              "host": ["{{baseUrl}}"],
+              "path": ["events"]
+            },
+            "description": "Creates a valid future event with status CANCELLED (allowed regardless of date). Saves the returned id into the collection variable cancelledEventId for use by Update Cancelled Event and Delete Cancelled Event. Expected status: 201 Created."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let jsonData = pm.response.json();",
+                  "if (jsonData.id) {",
+                  "    pm.collectionVariables.set(\"cancelledEventId\", jsonData.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Update Cancelled Event",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Cancelled Setup Event - Modified\",\n  \"description\": \"Attempting to modify a cancelled event\",\n  \"startDateTime\": \"2026-11-05T09:00:00\",\n  \"endDateTime\": \"2026-11-05T12:00:00\",\n  \"venue\": \"Room 204\",\n  \"capacity\": 40,\n  \"status\": \"CANCELLED\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/events/{{cancelledEventId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["events", "{{cancelledEventId}}"]
+            },
+            "description": "Attempts to update the cancelled event (uses cancelledEventId). CANCELLED events cannot be updated. Expected status: 400 Bad Request."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Cancelled Event",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/events/{{cancelledEventId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["events", "{{cancelledEventId}}"]
+            },
+            "description": "Attempts to delete the cancelled event (uses cancelledEventId). Only UPCOMING events can be deleted. Expected status: 400 Bad Request."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "API Features",
+      "item": [
+        {
+          "name": "Search Events",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/events?search=GDG",
+              "host": ["{{baseUrl}}"],
+              "path": ["events"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "GDG"
+                }
+              ]
+            },
+            "description": "Searches events matching the term 'GDG'. Expected status: 200 OK."
+          },
+          "response": []
+        },
+        {
+          "name": "Filter Events",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/events?venue=Main&status=UPCOMING",
+              "host": ["{{baseUrl}}"],
+              "path": ["events"],
+              "query": [
+                {
+                  "key": "venue",
+                  "value": "Main"
+                },
+                {
+                  "key": "status",
+                  "value": "UPCOMING"
+                }
+              ]
+            },
+            "description": "Filters events by venue ('Main') and status ('UPCOMING') combined. Expected status: 200 OK."
+          },
+          "response": []
+        },
+        {
+          "name": "Pagination",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/events?page=1&limit=2",
+              "host": ["{{baseUrl}}"],
+              "path": ["events"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "2"
+                }
+              ]
+            },
+            "description": "Retrieves page 1 of results with a page size (limit) of 2 events. Expected status: 200 OK."
+          },
+          "response": []
+        },
+        {
+          "name": "Sorting",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/events?sort=date&order=asc",
+              "host": ["{{baseUrl}}"],
+              "path": ["events"],
+              "query": [
+                {
+                  "key": "sort",
+                  "value": "date"
+                },
+                {
+                  "key": "order",
+                  "value": "asc"
+                }
+              ]
+            },
+            "description": "Sorts events by 'date' (mapped internally to startDateTime) in ascending order. Expected status: 200 OK."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
