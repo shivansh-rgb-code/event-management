@@ -1,4 +1,5 @@
 package com.example.event_management.service;
+import com.example.event_management.entity.AuditLog;
 import com.example.event_management.entity.EventStatus;
 import com.example.event_management.entity.Event;
 import com.example.event_management.exception.BusinessRuleException;
@@ -13,13 +14,18 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import com.example.event_management.repository.AuditLogRepository;
 @Service
 public class EventService {
 
     private final EventRepository eventRepository;
+    private final AuditLogRepository auditLogRepository;
+    public EventService(
+            EventRepository eventRepository,
+            AuditLogRepository auditLogRepository) {
 
-    public EventService(EventRepository eventRepository) {
         this.eventRepository = eventRepository;
+        this.auditLogRepository = auditLogRepository;
     }
 
     public Event createEvent(Event event) {
@@ -41,8 +47,18 @@ public class EventService {
                     "An event with the same name, start time and venue already exists"
             );
         }
-        return eventRepository.save(event);
-    }
+        Event savedEvent = eventRepository.save(event);
+
+        auditLogRepository.save(
+                new AuditLog(
+                        savedEvent.getId(),
+                        savedEvent.getName(),
+                        "CREATE",
+                        LocalDateTime.now()
+                )
+        );
+
+        return savedEvent;    }
 
     public Page<Event> getEvents(
             String search,
@@ -147,8 +163,18 @@ public class EventService {
 
         validateEventRules(existingEvent);
         validateEventStatus(existingEvent);
+        Event savedEvent = eventRepository.save(existingEvent);
 
-        return Optional.of(eventRepository.save(existingEvent));
+        auditLogRepository.save(
+                new AuditLog(
+                        savedEvent.getId(),
+                        savedEvent.getName(),
+                        "UPDATE",
+                        LocalDateTime.now()
+                )
+        );
+
+        return Optional.of(savedEvent);
     }
 
     public void deleteEvent(Long id) {
@@ -182,6 +208,15 @@ public class EventService {
         }
 
         eventRepository.delete(event);
+
+        auditLogRepository.save(
+                new AuditLog(
+                        event.getId(),
+                        event.getName(),
+                        "DELETE",
+                        LocalDateTime.now()
+                )
+        );
     }
 
     private void validateEventRules(Event event) {
