@@ -148,7 +148,7 @@ The tests are isolated from the development MySQL database by using an H2 in-mem
 Current test result:
 
 ```text
-Tests run: 18
+Tests run: 17
 Failures: 0
 Errors: 0
 Skipped: 0
